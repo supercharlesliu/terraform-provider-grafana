@@ -1,6 +1,7 @@
 package grafana
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -16,7 +17,9 @@ func ResourceDataSource() *schema.Resource {
 		Update: UpdateDataSource,
 		Delete: DeleteDataSource,
 		Read:   ReadDataSource,
-
+		Importer: &schema.ResourceImporter{
+			State: ImportDatasource,
+		},
 		Schema: map[string]*schema.Schema{
 			"id": &schema.Schema{
 				Type:     schema.TypeString,
@@ -172,17 +175,16 @@ func ReadDataSource(d *schema.ResourceData, meta interface{}) error {
 	idStr := d.Id()
 	id, err := strconv.ParseInt(idStr, 10, 64)
 	if err != nil {
-		if err.Error() == "404 Not Found" {
-			log.Printf("[WARN] removing datasource %s from state because it no longer exists in grafana", d.Get("name").(string))
-			d.SetId("")
-			return nil
-		}
 		return fmt.Errorf("Invalid id: %#v", idStr)
 	}
 
 	dataSource, err := client.DataSource(id)
 	if err != nil {
-
+		if err.Error() == "404 Not Found" {
+			log.Printf("[WARN] removing datasource %s from state because it no longer exists in grafana", d.Get("name").(string))
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
@@ -255,4 +257,13 @@ func makeSecureJSONData(d *schema.ResourceData) gapi.SecureJSONData {
 		AccessKey: d.Get("secure_json_data.0.access_key").(string),
 		SecretKey: d.Get("secure_json_data.0.secret_key").(string),
 	}
+}
+
+func ImportDatasource(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	err := ReadDataSource(d, meta)
+
+	if err != nil || d.Id() == "" {
+		return nil, errors.New(fmt.Sprintf("Error: Unable to import Grafana Datasource: %s.", err))
+	}
+	return []*schema.ResourceData{d}, nil
 }

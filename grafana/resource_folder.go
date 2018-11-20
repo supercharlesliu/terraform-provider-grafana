@@ -2,6 +2,7 @@ package grafana
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"strconv"
@@ -16,6 +17,9 @@ func ResourceFolder() *schema.Resource {
 		Create: CreateFolder,
 		Delete: DeleteFolder,
 		Read:   ReadFolder,
+		Importer: &schema.ResourceImporter{
+			State: ImportFolder,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"id": &schema.Schema{
@@ -129,4 +133,13 @@ func NormalizeFolderConfigJSON(configI interface{}) string {
 	}
 
 	return string(ret)
+}
+
+func ImportFolder(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceData, error) {
+	err := ReadFolder(d, meta)
+
+	if err != nil || d.Id() == "" {
+		return nil, errors.New(fmt.Sprintf("Error: Unable to import Folder: %s.", err))
+	}
+	return []*schema.ResourceData{d}, nil
 }
