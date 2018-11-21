@@ -27,22 +27,17 @@ func ResourceUser() *schema.Resource {
 				Type:     schema.TypeInt,
 				Computed: true,
 			},
-			"name": &schema.Schema{
+			"login": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"name": &schema.Schema{
+				Type:     schema.TypeString,
+				Optional: true,
 			},
 			"email": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
-			},
-			"password": &schema.Schema{
-				Type:     schema.TypeString,
-				Optional: true,
-			},
-			"is_admin": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
 			},
 		},
 	}
@@ -67,11 +62,10 @@ func CreateUser(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*gapi.Client)
 
 	user := gapi.User{
-		Email:    d.Get("email").(string),
-		Name:     d.Get("name").(string),
-		Login:    d.Get("email").(string),
-		Password: d.Get("password").(string),
-		IsAdmin:  d.Get("is_admin").(bool),
+		Login:   d.Get("login").(string),
+		Email:   d.Get("email").(string),
+		Name:    d.Get("name").(string),
+		IsAdmin: false,
 	}
 
 	if user.Password == "" {
@@ -123,15 +117,29 @@ func ReadUser(d *schema.ResourceData, meta interface{}) error {
 
 	d.SetId(strconv.FormatInt(user.Id, 10))
 	d.Set("name", user.Name)
+	d.Set("login", user.Login)
 	d.Set("email", user.Email)
-	d.Set("is_admin", user.IsAdmin)
-
-	// Read member of
 
 	return nil
 }
 
 func UpdateUser(d *schema.ResourceData, meta interface{}) error {
+	client := meta.(*gapi.Client)
+	id, err := strconv.ParseInt(d.Id(), 10, 64)
+	if err != nil {
+		return err
+	}
+	if d.HasChange("name") || d.HasChange("login") || d.HasChange("email") {
+		u := gapi.UserUpdate{
+			Login: d.Get("login").(string),
+			Email: d.Get("email").(string),
+			Name:  d.Get("name").(string),
+		}
+		err := client.UpdateUser(id, u)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
