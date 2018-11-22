@@ -82,8 +82,37 @@ func ResourceOrganization() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"preferences": &schema.Schema{
+				Type:     schema.TypeMap,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
+}
+
+func map2OrgPrefs(m map[string]interface{}) *gapi.OrgPreferences {
+	prefs := &gapi.OrgPreferences{}
+	if m["theme"] != nil {
+		prefs.Theme = m["theme"].(string)
+	}
+	if m["homeDashboardUid"] != nil {
+		prefs.HomeDashboardUid = m["homeDashboardUid"].(string)
+	}
+	if m["timezone"] != nil {
+		prefs.Timezone = m["timezone"].(string)
+	}
+	return prefs
+}
+
+func prefs2Map(prefs *gapi.OrgPreferences) map[string]interface{} {
+	m := make(map[string]interface{}, 0)
+	m["theme"] = prefs.Theme
+	m["homeDashboardUid"] = prefs.HomeDashboardUid
+	m["timezone"] = prefs.Timezone
+	return m
 }
 
 func CreateOrganization(d *schema.ResourceData, meta interface{}) error {
@@ -97,6 +126,20 @@ func CreateOrganization(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 	d.SetId(strconv.FormatInt(orgId, 10))
+	if d.Get("preferences") != nil {
+		m := d.Get("preferences").(map[string]interface{})
+		prefs := map2OrgPrefs(m)
+		err := client.UpdateOrgPreferences(prefs)
+		if err != nil {
+			return err
+		}
+	}
+	prefs, err := client.GetOrgPreferences()
+	if err != nil {
+		return err
+	}
+	d.Set("preferences", prefs2Map(prefs))
+
 	return UpdateUsers(d, meta)
 }
 
@@ -116,6 +159,12 @@ func ReadOrganization(d *schema.ResourceData, meta interface{}) error {
 	if err := ReadUsers(d, meta); err != nil {
 		return err
 	}
+
+	prefs, err := client.GetOrgPreferences()
+	if err != nil {
+		return err
+	}
+	d.Set("preferences", prefs2Map(prefs))
 	return nil
 }
 
@@ -125,6 +174,15 @@ func UpdateOrganization(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
 		err := client.UpdateOrg(orgId, name)
+		if err != nil {
+			return err
+		}
+	}
+
+	if d.HasChange("preferences") {
+		m := d.Get("preferences").(map[string]interface{})
+		prefs := map2OrgPrefs(m)
+		err := client.UpdateOrgPreferences(prefs)
 		if err != nil {
 			return err
 		}
