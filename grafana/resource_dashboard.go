@@ -22,6 +22,10 @@ func ResourceDashboard() *schema.Resource {
 		},
 
 		Schema: map[string]*schema.Schema{
+			"uid": &schema.Schema{
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 			"slug": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
@@ -57,6 +61,7 @@ func CreateDashboard(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(resp.Slug)
+	d.Set("uid", dashboard.Meta.Uid)
 
 	return ReadDashboard(d, meta)
 }
@@ -85,6 +90,7 @@ func ReadDashboard(d *schema.ResourceData, meta interface{}) error {
 	configJSON := NormalizeDashboardConfigJSON(string(configJSONBytes))
 
 	d.SetId(dashboard.Meta.Slug)
+	d.Set("uid", dashboard.Meta.Uid)
 	d.Set("slug", dashboard.Meta.Slug)
 	d.Set("config_json", configJSON)
 	d.Set("folder", dashboard.Folder)
