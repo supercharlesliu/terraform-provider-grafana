@@ -85,8 +85,8 @@ func CreateUser(d *schema.ResourceData, meta interface{}) error {
 
 func ExistsUser(d *schema.ResourceData, meta interface{}) (bool, error) {
 	client := meta.(*gapi.Client)
-	teamId, _ := strconv.ParseInt(d.Id(), 10, 64)
-	_, err := client.User(teamId)
+	userId, _ := strconv.ParseInt(d.Id(), 10, 64)
+	_, err := client.User(userId)
 	if err != nil && err.Error() == "404 Not Found" {
 		return false, nil
 	}
@@ -115,7 +115,6 @@ func ReadUser(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.SetId(strconv.FormatInt(user.Id, 10))
 	d.Set("name", user.Name)
 	d.Set("login", user.Login)
 	d.Set("email", user.Email)
@@ -152,7 +151,7 @@ func ImportUser(d *schema.ResourceData, meta interface{}) ([]*schema.ResourceDat
 	err := ReadUser(d, meta)
 
 	if err != nil || d.Id() == "" {
-		return nil, errors.New(fmt.Sprintf("Error: Unable to import Grafana Team: %s.", err))
+		return nil, errors.New(fmt.Sprintf("Error: Unable to import Grafana User: %s.", err))
 	}
 	return []*schema.ResourceData{d}, nil
 }
