@@ -162,6 +162,7 @@ func ReadOrganization(d *schema.ResourceData, meta interface{}) error {
 
 	prefs, err := client.GetOrgPreferences()
 	if err != nil {
+		log.Printf("[ERROR] Error when reading preferences of the organization %s", d.Id())
 		return err
 	}
 	d.Set("preferences", prefs2Map(prefs))
@@ -184,6 +185,7 @@ func UpdateOrganization(d *schema.ResourceData, meta interface{}) error {
 		prefs := map2OrgPrefs(m)
 		err := client.UpdateOrgPreferences(prefs)
 		if err != nil {
+			log.Printf("[ERROR] Error when updating preferences of the organization %s", d.Id())
 			return err
 		}
 	}
@@ -228,6 +230,7 @@ func ReadUsers(d *schema.ResourceData, meta interface{}) error {
 	orgId, _ := strconv.ParseInt(d.Id(), 10, 64)
 	orgUsers, err := client.OrgUsers(orgId)
 	if err != nil {
+		log.Printf("[ERROR] Read organization %d users error: %s", orgId, err.Error())
 		return err
 	}
 	roleMap := map[string][]string{"Admin": nil, "Editor": nil, "Viewer": nil}
