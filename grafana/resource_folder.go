@@ -79,6 +79,7 @@ func ReadFolder(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	d.SetId(strconv.FormatInt(folder.Id, 10))
+	d.Set("uid", folder.Uid)
 	d.Set("title", folder.Title)
 
 	return nil
