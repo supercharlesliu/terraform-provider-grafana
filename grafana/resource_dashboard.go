@@ -57,11 +57,13 @@ func CreateDashboard(d *schema.ResourceData, meta interface{}) error {
 
 	resp, err := client.NewDashboard(dashboard)
 	if err != nil {
+		log.Printf("Error found when create dashboard: %s", err.Error())
 		return err
 	}
 
-	d.SetId(resp.Slug)
-	d.Set("uid", dashboard.Meta.Uid)
+	d.SetId(resp.Uid)
+	d.Set("uid", resp.Uid)
+	d.Set("slug", resp.Slug)
 
 	return ReadDashboard(d, meta)
 }
@@ -89,7 +91,7 @@ func ReadDashboard(d *schema.ResourceData, meta interface{}) error {
 
 	configJSON := NormalizeDashboardConfigJSON(string(configJSONBytes))
 
-	d.SetId(dashboard.Meta.Slug)
+	d.SetId(dashboard.Meta.Uid)
 	d.Set("uid", dashboard.Meta.Uid)
 	d.Set("slug", dashboard.Meta.Slug)
 	d.Set("config_json", configJSON)
@@ -113,7 +115,7 @@ func UpdateDashboard(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.SetId(resp.Slug)
+	d.Set("slug", resp.Slug)
 
 	return ReadDashboard(d, meta)
 }
