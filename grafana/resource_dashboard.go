@@ -71,12 +71,12 @@ func CreateDashboard(d *schema.ResourceData, meta interface{}) error {
 func ReadDashboard(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*gapi.Client)
 
-	slug := d.Id()
+	uid := d.Id()
 
-	dashboard, err := client.Dashboard(slug)
+	dashboard, err := client.DashboardByUid(uid)
 	if err != nil {
 		if err.Error() == "404 Not Found" {
-			log.Printf("[WARN] removing dashboard %s from state because it no longer exists in grafana", slug)
+			log.Printf("[WARN] removing dashboard %s from state because it no longer exists in grafana", uid)
 			d.SetId("")
 			return nil
 		}
@@ -91,7 +91,6 @@ func ReadDashboard(d *schema.ResourceData, meta interface{}) error {
 
 	configJSON := NormalizeDashboardConfigJSON(string(configJSONBytes))
 
-	d.SetId(dashboard.Meta.Uid)
 	d.Set("uid", dashboard.Meta.Uid)
 	d.Set("slug", dashboard.Meta.Slug)
 	d.Set("config_json", configJSON)
@@ -146,7 +145,7 @@ func prepareDashboardModel(configJSON string) map[string]interface{} {
 
 	delete(configMap, "id")
 	// Only exists in 5.0+
-	delete(configMap, "uid")
+	// delete(configMap, "uid")
 	configMap["version"] = 0
 
 	return configMap
@@ -177,7 +176,7 @@ func NormalizeDashboardConfigJSON(configI interface{}) string {
 	delete(configMap, "id")
 	delete(configMap, "version")
 	// Only exists in 5.0+
-	delete(configMap, "uid")
+	// delete(configMap, "uid")
 
 	ret, err := json.Marshal(configMap)
 	if err != nil {
