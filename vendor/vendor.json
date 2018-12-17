@@ -603,12 +603,6 @@
 			"revisionTime": "2016-10-03T17:45:16Z"
 		},
 		{
-			"checksumSHA1": "o2tvQtDD1n17Ie+HV3Ui1seldYs=",
-			"path": "github.com/nytm/go-grafana-api",
-			"revision": "9cc848df73853d7772a5a952b8e6597a586f9b83",
-			"revisionTime": "2018-10-22T15:28:30Z"
-		},
-		{
 			"checksumSHA1": "pvg8L4xN+zO9HLJislpVeHPPLjM=",
 			"path": "github.com/rainycape/unidecode",
 			"revision": "cb7f23ec59bec0d61b19c56cd88cee3d0cc1870c",
@@ -625,6 +619,13 @@
 			"path": "github.com/satori/go.uuid",
 			"revision": "b061729afc07e77a8aa4fad0a2fd840958f1942a",
 			"revisionTime": "2016-09-27T10:08:44Z"
+		},
+		{
+			"checksumSHA1": "x+PjaIJeh28SNDROes1d4U5pPxE=",
+			"path": "github.com/supercharlesliu/go-grafana-api",
+			"revision": "05632b35b75d360fb6c758db9a62ea3429f2d3f8",
+			"version": "v1.0.1",
+			"versionExact": "v1.0.1"
 		},
 		{
 			"checksumSHA1": "vE43s37+4CJ2CDU6TlOUOYE0K9c=",

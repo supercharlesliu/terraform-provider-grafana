@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/hashcode"
 	"github.com/hashicorp/terraform/helper/schema"
-	gapi "github.com/nytm/go-grafana-api"
+	gapi "github.com/supercharlesliu/go-grafana-api"
 )
 
 func ResourceTeam() *schema.Resource {

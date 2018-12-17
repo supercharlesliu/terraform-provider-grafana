@@ -9,7 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform/helper/schema"
 
-	gapi "github.com/nytm/go-grafana-api"
+	gapi "github.com/supercharlesliu/go-grafana-api"
 )
 
 func ResourceFolder() *schema.Resource {
