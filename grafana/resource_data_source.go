@@ -1,6 +1,7 @@
 package grafana
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -80,28 +81,9 @@ func ResourceDataSource() *schema.Resource {
 			},
 
 			"json_data": &schema.Schema{
-				Type:     schema.TypeList,
+				Type:     schema.TypeString,
 				Optional: true,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"auth_type": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"default_region": &schema.Schema{
-							Type:     schema.TypeString,
-							Required: true,
-						},
-						"custom_metrics_namespaces": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-						"assume_role_arn": &schema.Schema{
-							Type:     schema.TypeString,
-							Optional: true,
-						},
-					},
-				},
+				Default:  "{}",
 			},
 
 			"secure_json_data": &schema.Schema{
@@ -201,6 +183,12 @@ func ReadDataSource(d *schema.ResourceData, meta interface{}) error {
 	d.Set("url", dataSource.URL)
 	d.Set("username", dataSource.User)
 
+	b, err := json.Marshal(dataSource.JSONData)
+	if err != nil {
+		return err
+	}
+	d.Set("json_data", string(b))
+
 	return nil
 }
 
@@ -243,13 +231,11 @@ func makeDataSource(d *schema.ResourceData) (*gapi.DataSource, error) {
 	}, err
 }
 
-func makeJSONData(d *schema.ResourceData) gapi.JSONData {
-	return gapi.JSONData{
-		AuthType:                d.Get("json_data.0.auth_type").(string),
-		DefaultRegion:           d.Get("json_data.0.default_region").(string),
-		CustomMetricsNamespaces: d.Get("json_data.0.custom_metrics_namespaces").(string),
-		AssumeRoleArn:           d.Get("json_data.0.assume_role_arn").(string),
-	}
+func makeJSONData(d *schema.ResourceData) map[string]interface{} {
+	str := d.Get("json_data").(string)
+	var data map[string]interface{}
+	json.Unmarshal([]byte(str), &data)
+	return data
 }
 
 func makeSecureJSONData(d *schema.ResourceData) gapi.SecureJSONData {
