@@ -3,6 +3,7 @@ GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 WEBSITE_REPO=github.com/hashicorp/terraform-website
 PKG_NAME=grafana
 GRAFANA_VERSION ?= "latest"
+GRAFANA_ADMIN_PWD ?= "admin"
 
 default: build
 
@@ -15,11 +16,13 @@ test: fmtcheck
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
 testacc: fmtcheck
+	GRAFANA_URL=http://localhost:3000 \
+	GRAFANA_AUTH=admin:$(GRAFANA_ADMIN_PWD) \
 	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
 test-serv: fmtcheck
 	@docker pull "grafana/grafana:$(GRAFANA_VERSION)"
-	docker run -p 127.0.0.1:3000:3000 "grafana/grafana:$(GRAFANA_VERSION)"
+	docker run -d -p 127.0.0.1:3000:3000 -e "GF_LOG_LEVEL=debug" -e "GF_SECURITY_ADMIN_PASSWORD=$(GRAFANA_ADMIN_PWD)" "grafana/grafana:$(GRAFANA_VERSION)"
 
 vet:
 	@echo "go vet ."
@@ -65,4 +68,3 @@ endif
 	@$(MAKE) -C $(GOPATH)/src/$(WEBSITE_REPO) website-provider-test PROVIDER_PATH=$(shell pwd) PROVIDER_NAME=$(PKG_NAME)
 
 .PHONY: build test testacc vet fmt fmtcheck errcheck vendor-status test-compile website website-test
-
