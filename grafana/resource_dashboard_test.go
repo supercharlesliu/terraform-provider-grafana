@@ -40,6 +40,8 @@ func TestAccDashboard_basic(t *testing.T) {
 					resource.TestMatchResourceAttr(
 						"grafana_dashboard.test", "config_json", regexp.MustCompile(".*Updated Title.*"),
 					),
+					resource.TestCheckResourceAttr("grafana_dashboard.test", "id", "terraform-acceptance-test"),
+					resource.TestCheckResourceAttr("grafana_dashboard.test", "slug", "terraform-acceptance-test"),
 				),
 			},
 			// final step checks importing the current state we reached in the step above
@@ -144,6 +146,7 @@ func testAccDashboardDisappear(dashboard *gapi.Dashboard) resource.TestCheckFunc
 func testAccDashboardCheckDestroy(dashboard *gapi.Dashboard) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(*gapi.Client)
+		fmt.Println("check: ", dashboard.Meta.Slug)
 		_, err := client.Dashboard(dashboard.Meta.Slug)
 		if err == nil {
 			return fmt.Errorf("dashboard still exists")
@@ -176,7 +179,8 @@ resource "grafana_dashboard" "test" {
 {
     "title": "Terraform Acceptance Test",
     "id": 12,
-    "version": "43"
+    "version": "43",
+		"panels": []
 }
 EOT
 }
