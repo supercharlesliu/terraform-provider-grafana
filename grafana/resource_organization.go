@@ -55,7 +55,7 @@ func ResourceOrganization() *schema.Resource {
 			"create_users": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+				Default:  false,
 			},
 			"org_id": &schema.Schema{
 				Type:     schema.TypeInt,
